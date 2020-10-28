@@ -9,6 +9,7 @@ using UnityEngine.UI;
 public class GunsManager : MonoBehaviour
 {
     [SerializeField] private AnimationClip newZoom;
+    [SerializeField] private AnimationClip oldAnim;
     
     [SerializeField] private Button Ak74Btn;
     [SerializeField] private Button SiFiBtn;
@@ -21,8 +22,8 @@ public class GunsManager : MonoBehaviour
     [SerializeField] private GameObject DoubleBarell;
     [SerializeField] private GameObject Weapon;
 
-    private Animator _animator;
-    private AnimatorOverrideController _overrideController;
+    private Animator animator;
+    private AnimatorOverrideController overrideController;
 
     private int isZoomParameter = Animator.StringToHash("isZoom");
     private int isShootParameter = Animator.StringToHash("isShoot");
@@ -31,7 +32,9 @@ public class GunsManager : MonoBehaviour
 
     void Start()
     {
-        _animator = GetComponent<Animator>();
+        animator = GetComponent<Animator>();
+        overrideController = new AnimatorOverrideController(animator.runtimeAnimatorController);
+        animator.runtimeAnimatorController = overrideController;
         
         Ak74Btn.onClick.AddListener(() => ActivateGun(AK74, SiFi, MG61, DoubleBarell));
         SiFiBtn.onClick.AddListener(() => ActivateGun(SiFi, AK74, MG61, DoubleBarell));
@@ -45,41 +48,49 @@ public class GunsManager : MonoBehaviour
         if (Input.GetMouseButtonDown(0))
         {
             Weapon.SetActive(true);
-            _animator.SetFloat(ShootParameter, 1);
-            _animator.SetBool(isShootParameter, true);
+            animator.SetFloat(ShootParameter, 1);
+            animator.SetBool(isShootParameter, true);
         }
         
         if (Input.GetMouseButtonUp(0))
         {
             Weapon.SetActive(false);
-            _animator.SetFloat(ShootParameter, 0);
-            _animator.SetBool(isShootParameter, false);
+            animator.SetFloat(ShootParameter, 0);
+            animator.SetBool(isShootParameter, false);
         }
         
         //Zoom
         if (Input.GetMouseButtonDown(1))
         {
-            _animator.SetBool(isZoomParameter, true);
+            if (SiFi.activeSelf)
+            {
+                overrideController["ZoomAnim"] = newZoom;
+            }
+            else
+            {
+                overrideController["ZoomAnim"] = oldAnim;
+            }
+            animator.SetBool(isZoomParameter, true);
         }
         
         if (Input.GetMouseButtonUp(1))
         {
-            _animator.SetBool(isZoomParameter, false);
+            animator.SetBool(isZoomParameter, false);
         }
 
         //Moving
         if (Input.GetKeyDown(KeyCode.W))
         {
-            var layerIndex = _animator.GetLayerIndex("Moving");
-            _animator.SetBool(isMovingParameter, true);
-            _animator.SetLayerWeight(layerIndex, 0.4f);
+            var layerIndex = animator.GetLayerIndex("Moving");
+            animator.SetBool(isMovingParameter, true);
+            animator.SetLayerWeight(layerIndex, 0.4f);
         }
 
         if (Input.GetKeyUp(KeyCode.W))
         {
-            var layerIndex = _animator.GetLayerIndex("Moving");
-            _animator.SetLayerWeight(layerIndex, 0);
-            _animator.SetBool(isMovingParameter, false);
+            var layerIndex = animator.GetLayerIndex("Moving");
+            animator.SetLayerWeight(layerIndex, 0);
+            animator.SetBool(isMovingParameter, false);
         }
     }
     

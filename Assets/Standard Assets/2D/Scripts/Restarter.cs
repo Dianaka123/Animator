@@ -6,11 +6,16 @@ namespace UnityStandardAssets._2D
 {
     public class Restarter : MonoBehaviour
     {
+        
         private void OnTriggerEnter2D(Collider2D other)
         {
-            if (other.tag == "Player")
+            if (other.CompareTag("Player"))
             {
                 SceneManager.LoadScene(SceneManager.GetSceneAt(0).name);
+            }
+            else if (other.gameObject.layer == LayerMask.NameToLayer("Enemy"))
+            {
+                Destroy(other.gameObject);
             }
         }
     }
